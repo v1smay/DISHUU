@@ -1,1 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Love</title>
+    <style>
+        /* --- Page Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
+        /* --- Main Container --- */
+        .container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem 3rem;
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        /* --- NEW: Intro Text Animation --- */
+        #intro-text {
+            font-size: 1.4rem;
+            color: #d90429;
+            font-weight: 500;
+            line-height: 1.6;
+            min-height: 150px; /* Give space for text to type */
+            display: inline-block; /* Needed for cursor */
+            text-align: left;
+            border-right: 3px solid #ef476f; /* The typing cursor */
+            white-space: normal; /* Allows text to wrap */
+            animation: blink-caret 0.75s step-end infinite;
+        }
+        
+        /* Blinking cursor animation */
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #ef476f }
+        }
+
+        /* Class to add when typing is done */
+        .typing-done {
+            border-right: none; /* Hide cursor */
+        }
+
+        /* --- NEW: Generator Content (Hidden by default) --- */
+        #generator-content {
+            display: none; /* Hidden initially */
+        }
+        
+        /* NEW: Fade-in animation for generator */
+        .fade-in-content {
+            animation: fadeInContent 1.2s ease-out;
+        }
+        
+        @keyframes fadeInContent {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        
+        h1 {
+            color: #d90429;
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        /* --- Reason Display Area --- */
+        #reason-display {
+            font-size: 1.3rem;
+            color: #333;
+            min-height: 60px; /* Prevents button from jumping */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            background: #fff8f8;
+            border: 1px dashed #ffb3c1;
+            transition: all 0.3s ease;
+        }
+
+        /* --- Fade-in Animation for New Reason --- */
+        .fade-in-reason {
+            animation: fadeInReason 0.6s ease-in-out;
+        }
+
+        @keyframes fadeInReason {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Button Style --- */
+        #reason-button {
+            background-color: #ef476f; /* Bright pink */
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(239, 71, 111, 0.3);
+        }
+
+        #reason-button:hover {
+            background-color: #d90429; /* Darker pink */
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(239, 71, 111, 0.4);
+        }
+
+        #reason-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <p id="intro-text"></p>
+
+        <div id="generator-content">
+            <h1>Reasons I Love You</h1>
+            
+            <p id="reason-display">Click the button to see a reason!</p>
+            
+            <button id="reason-button">❤️ Click Me ❤️</button>
+        </div>
+    </div>
+
+    <script>
+        // --- NEW: Intro Typewriter Logic ---
+
+        // The text to be typed
+        const introText = "Hieeeeeee cutuuuuuu , loveee youuu mwaaahhhh , aap bolte the na why me , abb iss website ke ill keep updating the reasons ";
+        
+        // HTML Elements
+        const introElement = document.getElementById("intro-text");
+        const generatorElement = document.getElementById("generator-content");
+        
+        let charIndex = 0;
+        const typingSpeed = 80; // Speed in milliseconds (lower is faster)
+
+        function typeIntro() {
+            if (charIndex < introText.length) {
+                introElement.textContent += introText.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeIntro, typingSpeed);
+            } else {
+                // Typing is finished
+                introElement.classList.add("typing-done"); // Remove the cursor
+                
+                // Wait 1 second, then show the generator
+                setTimeout(function() {
+                    generatorElement.style.display = "block";
+                    generatorElement.classList.add("fade-in-content");
+                }, 1000); // 1-second delay
+            }
+        }
+
+        // Start the typing animation when the page loads
+        document.addEventListener("DOMContentLoaded", typeIntro);
+
+
+        // --- Original Reason Generator Logic ---
+
+        // !! IMPORTANT !!
+        // Add your own reasons to this list!
+        const reasons = [
+            "YOUREE SOOOO HAWATTT BEBE",
+            "Itna cute jab tu gussa hoti hai",
+            "Itna jo sharmate ho , bilkul laal ho jate ho",
+            "Worlds Strongest woman you are ofc i love you",
+            "How smart you are.",
+            "Your desire to be with me.",
+            "Your eyes got my heart FALLING FOR YOU.",
+            "Aapki smile",
+            "Your love for me ofcourse <3",
+            "You inspire me to be a better person.",
+            "The way your eyes sparkle."
+        ];
+
+        // Get the HTML elements we need
+        const reasonDisplay = document.getElementById("reason-display");
+        const reasonButton = document.getElementById("reason-button");
+        
+        let lastIndex = -1;
+
+        // Listen for when the button is clicked
+        reasonButton.addEventListener("click", function() {
+            let newIndex;
+
+            do {
+                newIndex = Math.floor(Math.random() * reasons.length);
+            } while (newIndex === lastIndex && reasons.length > 1);
+
+            lastIndex = newIndex;
+            reasonDisplay.textContent = reasons[newIndex];
+            
+            // Trigger the fade-in animation for the reason
+            reasonDisplay.classList.remove("fade-in-reason");
+            void reasonDisplay.offsetWidth; // Force reflow
+            reasonDisplay.classList.add("fade-in-reason");
+        });
+
+    </script>
+</body>
+</html>
