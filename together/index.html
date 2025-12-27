@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Together</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    overflow: hidden;
+}
+canvas { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+let W, H;
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+const WHITE = "#f2f2f2";
+let frame = 0;
+let scene = 0;
+
+// ---------- dust ----------
+class Dust {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.life = 220 + Math.random() * 80;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.01;
+        this.life--;
+    }
+    draw() {
+        ctx.globalAlpha = Math.max(this.life / 200, 0);
+        ctx.fillStyle = WHITE;
+        ctx.fillRect(this.x, this.y, 1.2, 1.2);
+        ctx.globalAlpha = 1;
+    }
+}
+let dust = [];
+
+function explodeText(yPos) {
+    ctx.font = "28px serif";
+    const text = "come here";
+    const w = ctx.measureText(text).width;
+    let x = W / 2 - w / 2;
+    for (let ch of text) {
+        const cw = ctx.measureText(ch).width;
+        for (let i = 0; i < 20; i++) {
+            dust.push(new Dust(
+                x + Math.random() * cw,
+                yPos + Math.random() * 10
+            ));
+        }
+        x += cw;
+    }
+}
+
+// ---------- easing ----------
+function ease(t) {
+    return t < 0.5
+        ? 2 * t * t
+        : 1 - Math.pow(-2 * t + 2, 2) / 2;
+}
+
+// ---------- figure ----------
+function drawFigure(x, y, lift, tilt, lifted = false, sway = 0, openArms = false) {
+    ctx.strokeStyle = WHITE;
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+
+    const headDrop = lifted ? 10 : 0;
+    const headY = y - 120 - lift + sway + headDrop;
+    const neckY = y - 95 - lift + sway + headDrop;
+    const hipY  = y - 20 - lift + sway;
+
+    // head
+    ctx.beginPath();
+    ctx.arc(x + tilt * 8, headY, 18, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // torso (ANCHOR LINE)
+    ctx.beginPath();
+    ctx.moveTo(x, neckY);
+    ctx.lineTo(x, hipY);
+    ctx.stroke();
+
+    // arms
+    ctx.beginPath();
+    if (openArms) {
+        ctx.moveTo(x, neckY + 10);
+        ctx.lineTo(x - 30, neckY + 20);
+        ctx.moveTo(x, neckY + 10);
+        ctx.lineTo(x + 30, neckY + 20);
+    } else if (lifted) {
+        ctx.moveTo(x, neckY + 10);
+        ctx.lineTo(x - tilt * 8, neckY + 28);
+    } else {
+        ctx.moveTo(x, neckY + 10);
+        ctx.lineTo(x + tilt * 22, neckY + 34);
+    }
+    ctx.stroke();
+
+    // legs
+    ctx.beginPath();
+    if (lifted) {
+        /*
+          TORSO-LOCKED HUG
+          - curve crosses x exactly
+          - returns behind torso
+          - endpoints stay close
+        */
+
+        // front leg (wraps in front then clamps)
+        ctx.moveTo(x, hipY);
+        ctx.quadraticCurveTo(
+            x,     hipY + 12,   // CROSS torso line
+            x + 4, hipY + 36    // clamp close
+        );
+
+        // back leg (wraps behind then returns)
+        ctx.moveTo(x, hipY);
+        ctx.quadraticCurveTo(
+            x,     hipY + 18,   // CROSS torso line
+            x - 6, hipY + 40
+        );
+    } else {
+        ctx.moveTo(x, hipY);
+        ctx.lineTo(x - 14, y + 30);
+        ctx.moveTo(x, hipY);
+        ctx.lineTo(x + 14, y + 30);
+    }
+    ctx.stroke();
+}
+
+// ---------- animation ----------
+let walk = 0;
+let lift = 0;
+let finalAlpha = 0;
+let introAlpha = 1;
+
+function animate() {
+    frame++;
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const cy = H / 2 + 40;
+
+    // intro
+    if (scene === 0) {
+        ctx.globalAlpha = introAlpha;
+        drawFigure(cx, H * 0.25, 0, 0, false, 0, true);
+        ctx.fillStyle = WHITE;
+        ctx.font = "28px serif";
+        ctx.textAlign = "center";
+        ctx.fillText("come here", cx, H * 0.35);
+        introAlpha -= 0.01;
+        if (introAlpha <= 0) {
+            explodeText(H * 0.35);
+            scene = 1;
+            frame = 0;
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    // dust
+    if (scene === 1) {
+        dust.forEach(p => { p.update(); p.draw(); });
+        dust = dust.filter(p => p.life > 0);
+        if (frame > 200) {
+            scene = 2;
+            frame = 0;
+        }
+    }
+
+    // walk
+    if (scene === 2) {
+        walk = Math.min(frame / 220, 1);
+        const gap = 180 - ease(walk) * 150;
+        drawFigure(cx - gap, cy, 0, 0.25, false);
+        drawFigure(cx + gap + 4, cy, 0, -0.25, false);
+        if (walk >= 1) {
+            scene = 3;
+            frame = 0;
+        }
+    }
+
+    // lift
+    if (scene === 3) {
+        lift = Math.min(frame / 180, 1);
+        const liftY = Math.sin(lift * Math.PI / 2) * 48;
+        const sway = Math.sin(frame * 0.04) * 1.2;
+
+        drawFigure(cx - 14, cy, 0, 0.55, false, sway);
+        drawFigure(cx + 10, cy, liftY, -0.75, true, -sway);
+
+        if (lift >= 1 && frame > 220) {
+            finalAlpha = Math.min(finalAlpha + 0.01, 1);
+            ctx.globalAlpha = finalAlpha;
+            ctx.fillStyle = WHITE;
+            ctx.font = "italic 26px serif";
+            ctx.fillText("i miss you", cx, cy + 160);
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
